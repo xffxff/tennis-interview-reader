@@ -4,48 +4,14 @@ from openai import OpenAI
 import json
 import os
 
-def create_en_prompt(transcript_text):
-    prompt = f"""
-**Prompt: Summary of YouTube Interview Transcript**
-
-Objective:
-The goal is to summarize the key content and main ideas discussed in a YouTube video interview transcript. The summary should be concise, capturing the essence and pivotal points of the interview, making it easy for someone who hasn’t seen the video to understand its primary takeaways.
-
-Instructions:
-
-1. **Introduction**:
-   - Begin with a brief introduction that includes the names of the interviewer and interviewee, the date of the interview, and the primary topic or purpose of the interview.
-
-2. **Summary**:
-   - Provide a concise summary of the interview, highlighting the most important discussions and insights shared. Aim to capture the essence of the conversation in 2-3 paragraphs.
-
-3. **Key Points**:
-   - List 5-7 key points or topics that were discussed during the interview. These should be the most notable and impactful aspects of the conversation.
-
-Here is the transcript of the interview for reference:
-{transcript_text}
-"""
-    return prompt
-
 def create_zh_prompt(transcript_text):
     prompt = f"""
-**任务：YouTube采访视频的文字记录总结**
+下面我将提供给你一场采访的文字记录，这些文字记录可能是 Youtube 视频中自动生成的字幕，并不是完全准确的，但是可以作为参考。请你更具文字记录完成以下任务：
 
-目标：
-目标是总结一个YouTube视频采访的文字记录的关键内容和主要观点。总结应简明扼要，捕捉采访的精髓和关键点，使没有观看视频的人也能理解其主要内容。
+1. 总结采访中的内容，用简要的语言概括出采访的主要内容和关键观点。
+2. 提取罗列出本次采访中的所有问题，以及受访者的回答，受访者的回答不用提炼总结，尽量保持原汁原味
 
-说明：
-
-1. **简介**：
-   - 以简短的介绍开始，包括采访者和被采访者的名字、采访日期以及采访的主要主题或目的。
-
-2. **总结**：
-   - 提供一个简明的采访总结，突出最重要的讨论和分享的观点。目标是在2-3个段落内捕捉对话的精髓。
-
-3. **关键点**：
-   - 列出采访中讨论的5-7个关键点或话题。这些应是对话中最显著和最具影响力的方面。
-
-这是采访的文字记录供参考：
+这是采访的文字记录供参考，要求用中文回答，包括提问和回答：
 {transcript_text}
 """
     return prompt
@@ -90,19 +56,23 @@ def save_transcript_to_cache(video_id, transcript):
         json.dump(transcript, file)
         
 def main(video_id, zh_response=False):
-    transcript = load_cached_transcript(video_id)
-    if transcript is None:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
-        save_transcript_to_cache(video_id, transcript)
+    transcript_text = load_cached_transcript(video_id)
+    if transcript_text is None:
+        supported_transcripts = YouTubeTranscriptApi.list_transcripts(video_id)
+        for transcript in supported_transcripts:
+            print("Getting transcript for language:", transcript.language)
+            transcript_text = transcript.fetch()
+            break
+        if transcript_text is None:
+            print("No transcript found.")
+            return
+        save_transcript_to_cache(video_id, transcript_text)
     
     # Format the transcript for the prompt
-    transcript_text = "\n".join([f"- {entry['text']}" for entry in transcript])
+    transcript_text = "\n".join([f"- {entry['text']}" for entry in transcript_text])
     
     # Create the prompt
-    if zh_response:
-        prompt = create_zh_prompt(transcript_text)
-    else:
-        prompt = create_en_prompt(transcript_text)
+    prompt = create_zh_prompt(transcript_text)
     
     # Send the prompt to OpenAI
     response = send_to_openai(prompt, stream=True, stream_callback=lambda x: print(x, end="", flush=True))
@@ -110,7 +80,6 @@ def main(video_id, zh_response=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download and cache YouTube video transcript.")
     parser.add_argument("video_id", type=str, help="The ID of the YouTube video.")
-    parser.add_argument("--zh", action="store_true", help="Use Chinese prompt.")
     args = parser.parse_args()
     
     main(video_id=args.video_id, zh_response=args.zh)
