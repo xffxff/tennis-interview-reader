@@ -5,14 +5,14 @@ import json
 import os
 
 
-def create_zh_prompt(transcript_text):
+def create_prompt(transcript_text):
     prompt = f"""
-下面我将提供给你一场采访的文字记录，这些文字记录可能是 Youtube 视频中自动生成的字幕，并不是完全准确的，但是可以作为参考。请你更具文字记录完成以下任务：
+Below I will provide you with a transcript of an interview. These transcripts may be automatically generated subtitles from a YouTube video and are not completely accurate, but they can be used as a reference. Please complete the following tasks based on the transcript:
 
-1. 总结采访中的内容，用简要的语言概括出采访的主要内容和关键观点。
-2. 提取罗列出本次采访中的所有问题，以及受访者的回答，受访者的回答不用提炼总结，尽量保持原汁原味
+1. Summarize the content of the interview, briefly outlining the main points and key viewpoints.
+2. List all the questions from the interview and the interviewee's responses. The interviewee's responses do not need to be summarized; try to keep them as original as possible.
 
-这是采访的文字记录供参考，要求用中文回答，包括提问和回答：
+Here is the interview transcript for reference. 
 {transcript_text}
 """
     return prompt
@@ -64,7 +64,7 @@ def save_transcript_to_cache(video_id, transcript):
         json.dump(transcript, file)
 
 
-def main(video_id, zh_response=False):
+def main(video_id):
     transcript_text = load_cached_transcript(video_id)
     if transcript_text is None:
         supported_transcripts = YouTubeTranscriptApi.list_transcripts(video_id)
@@ -81,7 +81,7 @@ def main(video_id, zh_response=False):
     transcript_text = "\n".join([f"- {entry['text']}" for entry in transcript_text])
 
     # Create the prompt
-    prompt = create_zh_prompt(transcript_text)
+    prompt = create_prompt(transcript_text)
 
     # Send the prompt to OpenAI
     response = send_to_openai(
@@ -96,4 +96,4 @@ if __name__ == "__main__":
     parser.add_argument("video_id", type=str, help="The ID of the YouTube video.")
     args = parser.parse_args()
 
-    main(video_id=args.video_id, zh_response=args.zh)
+    main(video_id=args.video_id)
