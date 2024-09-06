@@ -2,8 +2,9 @@ from fasthtml.common import *
 from tennis_interview.search import youtube_search
 from tennis_interview.summary import summary as summary_video
 
+hdrs = (MarkdownJS(), HighlightJS(langs=['python', 'javascript', 'html', 'css']), )
 
-app = FastHTML()
+app, rt = fast_app(hdrs=hdrs)
 
 @app.get("/")
 def home():
@@ -43,7 +44,7 @@ def get_summary_content(response):
 
 def SummaryContent():
     stream_args = {"hx_trigger":"every 0.1s", "hx_swap":"outerHTML", "hx_get":"/summary/content"}
-    return Div(summary_content, **stream_args if summary_generating else {})
+    return Div(summary_content, **stream_args if summary_generating else {}, cls="marked")
 
 @app.get("/summary/content")
 def get():
@@ -56,3 +57,5 @@ def summary(video_id: str):
     response = summary_video(video_id)
     get_summary_content(response)
     return Title("Video Summary"), Main(H1("Video Summary"), SummaryContent())
+
+serve()
