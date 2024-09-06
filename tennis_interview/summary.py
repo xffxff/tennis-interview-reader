@@ -64,7 +64,7 @@ def save_transcript_to_cache(video_id, transcript):
         json.dump(transcript, file)
 
 
-def main(video_id):
+def summary(video_id):
     transcript_text = load_cached_transcript(video_id)
     if transcript_text is None:
         supported_transcripts = YouTubeTranscriptApi.list_transcripts(video_id)
@@ -84,9 +84,23 @@ def main(video_id):
     prompt = create_prompt(transcript_text)
 
     # Send the prompt to OpenAI
-    response = send_to_openai(
-        prompt, stream=True, stream_callback=lambda x: print(x, end="", flush=True)
+    # response = send_to_openai(
+    #     prompt, stream=True, stream_callback=lambda x: print(x, end="", flush=True)
+    # )
+    client = OpenAI(
+        api_key="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",
+        base_url="http://10.2.4.31:32643/v1",
     )
+
+    response = client.chat.completions.create(
+        model="moyi-chat-v03",
+        messages=[
+            {"role": "user", "content": prompt},
+        ],
+        stream=True,
+    )
+
+    return response
 
 
 if __name__ == "__main__":
