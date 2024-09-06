@@ -1,8 +1,9 @@
 import argparse
-from youtube_transcript_api import YouTubeTranscriptApi
-from openai import OpenAI
 import json
 import os
+
+from openai import OpenAI
+from youtube_transcript_api import YouTubeTranscriptApi
 
 
 def create_prompt(transcript_text):
