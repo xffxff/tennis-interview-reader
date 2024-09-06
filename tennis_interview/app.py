@@ -4,9 +4,10 @@ from markdown import markdown
 from tennis_interview.search import youtube_search
 from tennis_interview.summary import summary as summary_video
 
+gridlink = Link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/flexboxgrid/6.3.1/flexboxgrid.min.css", type="text/css")
 hdrs = (
-    MarkdownJS(),
-    HighlightJS(langs=["python", "javascript", "html", "css"]),
+    picolink,
+    gridlink,
 )
 
 app, rt = fast_app(hdrs=hdrs)
@@ -25,30 +26,37 @@ def get():
         target_id="res-list",
         hx_swap="innerHTML",
     )
-    res_list = Div(id="res-list")
+    res_list = Div(id="res-list", cls="row")
     return Title("Tennis Interview Reading"), Main(
         H1("Tennis Interview Search"), add, res_list, cls="container"
     )
 
 
+def VideoCard(video: dict):
+    grid_cls = "box col-xs-12 col-sm-6 col-md-4 col-lg-3"
+    title = video.get("snippet", {}).get("title")
+    video_id = video.get("id", {}).get("videoId")
+    thumbnail = (
+        video.get("snippet", {}).get("thumbnails", {}).get("medium", {}).get("url")
+    )
+    return Div(
+        Card(
+            A(Img(src=thumbnail), href=f"/summary/{video_id}", cls="carg-img-top"),
+            Div(P(B(title), cls="card-text"), cls="card-body"),
+        ),
+        id=f"video-{video_id}",
+        cls=grid_cls)
+
+
 @rt("/search")
 def get(query: str):
-    results = youtube_search(query)
+    results = youtube_search(query, max_results=12)
     videos = results.get("items", [])
     res_list = []
     for video in videos:
-        title = video.get("snippet", {}).get("title")
-        video_id = video.get("id", {}).get("videoId")
-        thumbnail = (
-            video.get("snippet", {}).get("thumbnails", {}).get("default", {}).get("url")
-        )
-        div = Div(
-            A(H2(title), href=f"/summary/{video_id}"),
-            A(Img(src=thumbnail), href=f"https://www.youtube.com/watch?v={video_id}"),
-        )
-        res_list.append(div)
+        res_list.append(VideoCard(video))
     clear_input = Input(id="new-query", name="query", hx_swap_oob="true")
-    return Div(*res_list), clear_input
+    return res_list, clear_input
 
 
 @threaded
@@ -83,7 +91,7 @@ def get(video_id: str):
     summary_content["content"] = ""
     response = summary_video(video_id)
     get_summary_content(response)
-    return Title("Video Summary"), Main(SummaryContent())
+    return Title("Video Summary"), Main(SummaryContent(), cls='container')
 
 
 serve()
