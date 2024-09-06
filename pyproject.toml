@@ -7,6 +7,8 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+youtube-transcript-api = "^0.6.2"
+openai = "^1.43.1"
 
 
 [build-system]
