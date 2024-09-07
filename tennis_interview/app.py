@@ -60,8 +60,7 @@ def get(query: str):
     res_list = []
     for video in results:
         res_list.append(VideoCard(video))
-    clear_input = Input(id="new-query", name="query", hx_swap_oob="true")
-    return res_list, clear_input
+    return res_list
 
 
 @threaded
