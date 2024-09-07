@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from fasthtml.common import *
 from markdown import markdown
 
-from tennis_interview.search import youtube_search
+from tennis_interview.search import duckduckgo_search as video_search
 from tennis_interview.summary import summary as summary_video
 
 load_dotenv()
@@ -39,13 +39,11 @@ def get():
     )
 
 
-def VideoCard(video: dict):
+def VideoCard(video: Video):
     grid_cls = "box col-xs-12 col-sm-6 col-md-4 col-lg-3"
-    title = video.get("snippet", {}).get("title")
-    video_id = video.get("id", {}).get("videoId")
-    thumbnail = (
-        video.get("snippet", {}).get("thumbnails", {}).get("medium", {}).get("url")
-    )
+    title = video.title
+    thumbnail = video.thumbnails.medium
+    video_id = video.id
     return Div(
         Card(
             A(Img(src=thumbnail), href=f"/summary/{video_id}", cls="carg-img-top"),
@@ -58,10 +56,9 @@ def VideoCard(video: dict):
 
 @rt("/search")
 def get(query: str):
-    results = youtube_search(query, max_results=12)
-    videos = results.get("items", [])
+    results = video_search(query, max_results=12)
     res_list = []
-    for video in videos:
+    for video in results:
         res_list.append(VideoCard(video))
     clear_input = Input(id="new-query", name="query", hx_swap_oob="true")
     return res_list, clear_input
