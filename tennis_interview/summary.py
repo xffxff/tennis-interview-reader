@@ -21,8 +21,8 @@ Here is the interview transcript for reference.
 
 def send_to_openai(prompt, stream=False, stream_callback=None):
     client = OpenAI(
-        api_key="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",
-        base_url="http://10.2.4.31:32643/v1",
+        api_key=os.getenv("OPENAI_API_KEY"),
+        base_url=os.getenv("OPENAI_BASE_URL"),
     )
 
     response = client.chat.completions.create(
@@ -89,8 +89,8 @@ def summary(video_id):
     #     prompt, stream=True, stream_callback=lambda x: print(x, end="", flush=True)
     # )
     client = OpenAI(
-        api_key="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",
-        base_url="http://10.2.4.31:32643/v1",
+        api_key=os.getenv("OPENAI_API_KEY"),
+        base_url=os.getenv("OPENAI_BASE_URL"),
     )
 
     response = client.chat.completions.create(
