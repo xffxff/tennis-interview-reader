@@ -13,6 +13,7 @@ python-fasthtml = "^0.5.1"
 google-api-python-client = "^2.144.0"
 fastapi = "^0.113.0"
 markdown = "^3.7"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

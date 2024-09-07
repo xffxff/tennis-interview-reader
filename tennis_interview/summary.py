@@ -102,13 +102,3 @@ def summary(video_id):
     )
 
     return response
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Download and cache YouTube video transcript."
-    )
-    parser.add_argument("video_id", type=str, help="The ID of the YouTube video.")
-    args = parser.parse_args()
-
-    main(video_id=args.video_id)

@@ -1,10 +1,17 @@
+from dotenv import load_dotenv
 from fasthtml.common import *
 from markdown import markdown
 
 from tennis_interview.search import youtube_search
 from tennis_interview.summary import summary as summary_video
 
-gridlink = Link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/flexboxgrid/6.3.1/flexboxgrid.min.css", type="text/css")
+load_dotenv()
+
+gridlink = Link(
+    rel="stylesheet",
+    href="https://cdnjs.cloudflare.com/ajax/libs/flexboxgrid/6.3.1/flexboxgrid.min.css",
+    type="text/css",
+)
 hdrs = (
     picolink,
     gridlink,
@@ -45,7 +52,8 @@ def VideoCard(video: dict):
             Div(P(B(title), cls="card-text"), cls="card-body"),
         ),
         id=f"video-{video_id}",
-        cls=grid_cls)
+        cls=grid_cls,
+    )
 
 
 @rt("/search")
@@ -91,7 +99,7 @@ def get(video_id: str):
     summary_content["content"] = ""
     response = summary_video(video_id)
     get_summary_content(response)
-    return Title("Video Summary"), Main(SummaryContent(), cls='container')
+    return Title("Video Summary"), Main(SummaryContent(), cls="container")
 
 
 serve()
