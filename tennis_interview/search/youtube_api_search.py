@@ -1,7 +1,9 @@
 import os
 from datetime import datetime
+
 import googleapiclient.discovery
-from .video import Video, Thumbnails
+
+from .video import Thumbnails, Video
 
 
 def youtube_api_search(query, max_results=5):
@@ -26,9 +28,18 @@ def youtube_api_search(query, max_results=5):
     videos = []
     for item in response.get("items", []):
         thumbnails = Thumbnails(
-            small=item.get("snippet", {}).get("thumbnails", {}).get("default", {}).get("url"),
-            medium=item.get("snippet", {}).get("thumbnails", {}).get("medium", {}).get("url"),
-            large=item.get("snippet", {}).get("thumbnails", {}).get("high", {}).get("url"),
+            small=item.get("snippet", {})
+            .get("thumbnails", {})
+            .get("default", {})
+            .get("url"),
+            medium=item.get("snippet", {})
+            .get("thumbnails", {})
+            .get("medium", {})
+            .get("url"),
+            large=item.get("snippet", {})
+            .get("thumbnails", {})
+            .get("high", {})
+            .get("url"),
         )
         id = item.get("id", {}).get("videoId")
         url = f"https://www.youtube.com/watch?v={id}"
@@ -38,7 +49,9 @@ def youtube_api_search(query, max_results=5):
             description=item.get("snippet", {}).get("description"),
             url=url,
             thumbnails=thumbnails,
-            published_date=datetime.fromisoformat(item.get("snippet", {}).get("publishedAt")),
+            published_date=datetime.fromisoformat(
+                item.get("snippet", {}).get("publishedAt")
+            ),
         )
         videos.append(video)
     return videos

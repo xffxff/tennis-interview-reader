@@ -1,6 +1,8 @@
-from duckduckgo_search import DDGS
-from .video import Video, Thumbnails
 from datetime import datetime
+
+from duckduckgo_search import DDGS
+
+from .video import Thumbnails, Video
 
 
 def duckduckgo_search(query, max_results=5):
