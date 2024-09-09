@@ -8,16 +8,18 @@ from .video import Thumbnails, Video
 def duckduckgo_search(query, max_results=5):
     results = DDGS().videos(
         keywords=query,
-        region="wt-wt",
+        region="us-en",
         safesearch="off",
-        timelimit="w",
-        resolution="high",
+        license_videos="youtube",
         duration="medium",
         max_results=max_results,
     )
 
     videos = []
     for result in results:
+        publisher = result.get("publisher")
+        if publisher != "YouTube":
+            continue
         video = Video(
             id=result.get("content").split("v=")[1],
             title=result.get("title"),
