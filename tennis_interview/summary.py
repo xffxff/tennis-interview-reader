@@ -13,6 +13,20 @@ Below I will provide you with a transcript of an interview. These transcripts ma
 1. Summarize the content of the interview, briefly outlining the main points and key viewpoints.
 2. List all the questions from the interview and the interviewee's responses. The interviewee's responses do not need to be summarized; try to keep them as original as possible.
 
+And the response should be in the following markdown format:
+
+# Interview Summary
+
+## Summary
+
+summary
+
+## Questions and Answers
+
+Q: question
+
+A: answer
+
 Here is the interview transcript for reference. 
 {transcript_text}
 """
@@ -98,6 +112,9 @@ def summary(video_id):
         messages=[
             {"role": "user", "content": prompt},
         ],
+        frequency_penalty=0,
+        presence_penalty=0.1,
+        max_tokens=16384,
         stream=True,
     )
 
