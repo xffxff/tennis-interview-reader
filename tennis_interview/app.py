@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from fasthtml.common import *
 from markdown import markdown
 
-from tennis_interview.search import duckduckgo_search as video_search
+from tennis_interview.search import serper_api_search as video_search
 from tennis_interview.summary import summary as summary_video
 
 load_dotenv()
@@ -12,10 +12,8 @@ gridlink = Link(
     href="https://cdnjs.cloudflare.com/ajax/libs/flexboxgrid/6.3.1/flexboxgrid.min.css",
     type="text/css",
 )
-hdrs = (
-    picolink,
-    gridlink,
-)
+css = Style(".card-img-top { width: 256px; height: 180px; object-fit: cover; }")
+hdrs = (picolink, gridlink, css)
 
 app, rt = fast_app(hdrs=hdrs)
 
@@ -46,7 +44,7 @@ def VideoCard(video: Video):
     video_id = video.id
     return Div(
         Card(
-            A(Img(src=thumbnail), href=f"/summary/{video_id}", cls="carg-img-top"),
+            A(Img(src=thumbnail, cls="card-img-top"), href=f"/summary/{video_id}"),
             Div(P(B(title), cls="card-text"), cls="card-body"),
         ),
         id=f"video-{video_id}",
