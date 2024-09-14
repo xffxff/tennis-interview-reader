@@ -1,8 +1,10 @@
 from dotenv import load_dotenv
 from fasthtml.common import *
 from markdown import markdown
+from starlette.requests import Request
+from starlette.responses import RedirectResponse
 
-from tennis_interview.search import youtube_api_search as video_search
+from tennis_interview.search import duckduckgo_search as video_search
 from tennis_interview.summary import summary as summary_video
 
 load_dotenv()
@@ -28,7 +30,7 @@ app, rt = fast_app(hdrs=hdrs)
 summary_content = {"content": "", "generating": False}
 
 
-def SearchContainer(initial: bool = False):
+def SearchPage(search_results: list[Video] = None):
     search = Form(
         Search(
             Input(type="search", id="new-query", name="query", placeholder="Search for a tennis interview"),
@@ -40,27 +42,32 @@ def SearchContainer(initial: bool = False):
     )
 
     div_cls = "flex flex-col items-center justify-center w-full"
-    if initial:
+    
+    res_list = []
+    if search_results:
+        for video in search_results:
+            res_list.append(VideoCard(video))
+    else:
         div_cls += " h-screen"
     
+    res_list = Div(*res_list, id="res-list", cls="row")
 
-    return Div(
-        H1("Tennis Interview Search", cls="text-2xl mb-4"), 
-        search,
-        cls=div_cls,
-        id="search-container",
-        hx_swap_oob='true'
+    return Title("Tennis Interview Search"), Main (
+        Div(
+            H1("Tennis Interview Search", cls="text-2xl mb-4"), 
+            search,
+            cls=div_cls,
+            id="search-container",
+            hx_swap_oob='true'
+        ),
+        res_list,
+        cls="container",
     )
 
 
 @rt("/")
 def get():
-    res_list = Div(id="res-list", cls="row")
-    return Title("Tennis Interview Reading"), Main(
-        SearchContainer(initial=True), 
-        res_list, 
-        cls="container",
-    )
+    return SearchPage()
 
 
 def VideoCard(video: Video):
@@ -79,12 +86,10 @@ def VideoCard(video: Video):
 
 
 @rt("/search")
-def get(query: str):
+def get(query: str, session):
     results = video_search(query, max_results=12)
-    res_list = []
-    for video in results:
-        res_list.append(VideoCard(video))
-    return res_list, SearchContainer() 
+    session['last_query'] = query
+    return SearchPage(results) 
 
 @threaded
 def get_summary_content(response):
@@ -113,12 +118,23 @@ def get():
 
 
 @rt("/summary/{video_id}")
-def get(video_id: str):
+def get(video_id: str, session):
     summary_content["generating"] = True
     summary_content["content"] = ""
     response = summary_video(video_id)
     get_summary_content(response)
-    return Title("Video Summary"), Main(SummaryContent(), cls="container")
+    last_query = session.get('last_query', '')
+    return Title("Video Summary"), Main(
+        SummaryContent(),
+        A("Back to Search Results", href=f"/search?query={last_query}", cls="mt-4 inline-block"),
+        cls="container"
+    )
 
+
+# Add a new route to handle the redirect
+@rt("/back-to-search")
+def get(session):
+    last_query = session.get('last_query', '')
+    return RedirectResponse(url=f"/search?query={last_query}")
 
 serve()
