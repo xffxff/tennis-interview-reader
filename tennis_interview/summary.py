@@ -33,34 +33,6 @@ Here is the interview transcript for reference.
     return prompt
 
 
-def send_to_openai(prompt, stream=False, stream_callback=None):
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url=os.getenv("OPENAI_BASE_URL"),
-    )
-
-    response = client.chat.completions.create(
-        model="moyi-chat-v03",
-        messages=[
-            {"role": "user", "content": prompt},
-        ],
-        stream=stream,
-    )
-
-    if stream:
-        res = ""
-        for chunk in response:
-            if chunk.choices[0].delta.content is not None:
-                delta = chunk.choices[0].delta.content
-                if stream_callback is not None:
-                    stream_callback(delta)
-                res += delta
-    else:
-        res = response.choices[0].message.content
-
-    return res
-
-
 CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
@@ -108,7 +80,7 @@ def summary(video_id):
     )
 
     response = client.chat.completions.create(
-        model="moyi-chat-v03",
+        model=os.getenv("OPENAI_MODEL_NAME"),
         messages=[
             {"role": "user", "content": prompt},
         ],
