@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 from fasthtml.common import *
 from markdown import markdown
-from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from tennis_interview.search import duckduckgo_search as video_search
