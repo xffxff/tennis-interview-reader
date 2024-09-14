@@ -13,8 +13,15 @@ gridlink = Link(
     type="text/css",
 )
 tailwindcss = Script(src="https://cdn.tailwindcss.com")
+tailwind_config = Script("""
+    tailwind.config = {
+        corePlugins: {
+            preflight: false,
+        }
+    }
+""")
 css = Style(".card-img-top { width: 256px; height: 180px; object-fit: cover; }")
-hdrs = (picolink, gridlink, tailwindcss, css)
+hdrs = (picolink, gridlink, tailwindcss, tailwind_config, css)
 
 app, rt = fast_app(hdrs=hdrs)
 
