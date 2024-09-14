@@ -12,8 +12,9 @@ gridlink = Link(
     href="https://cdnjs.cloudflare.com/ajax/libs/flexboxgrid/6.3.1/flexboxgrid.min.css",
     type="text/css",
 )
+tailwindcss = Script(src="https://cdn.tailwindcss.com")
 css = Style(".card-img-top { width: 256px; height: 180px; object-fit: cover; }")
-hdrs = (picolink, gridlink, css)
+hdrs = (picolink, gridlink, tailwindcss, css)
 
 app, rt = fast_app(hdrs=hdrs)
 
@@ -22,18 +23,23 @@ summary_content = {"content": "", "generating": False}
 
 @rt("/")
 def get():
-    inp = Input(
-        id="new-query", name="query", placeholder="", value="us open 2024 interview"
-    )
-    add = Form(
-        Group(inp, Button("Search")),
+    search = Form(
+        Search(
+            Input(type="search", id="new-query", name="query", placeholder="Search for a tennis interview"),
+        ),
         hx_get="./search",
         target_id="res-list",
         hx_swap="innerHTML",
+        cls="w-full max-w-md"
     )
+
     res_list = Div(id="res-list", cls="row")
     return Title("Tennis Interview Reading"), Main(
-        H1("Tennis Interview Search"), add, res_list, cls="container"
+        Div(
+            H1("Tennis Interview Search", cls="text-2xl mb-4"), 
+            search,
+            cls="flex flex-col items-center justify-center w-full",
+        ), res_list, cls="container"
     )
 
 
