@@ -32,7 +32,7 @@ app, rt = fast_app(hdrs=hdrs)
 summary_content = {"content": "", "generating": False}
 
 
-def SearchPage(search_results: list[Video] = None):
+def SearchPage(query: Optional[str] = None, search_results: list[Video] = None):
     search = Form(
         Search(
             Input(
@@ -40,6 +40,7 @@ def SearchPage(search_results: list[Video] = None):
                 id="new-query",
                 name="query",
                 placeholder="Search for a tennis interview",
+                value=query,
             ),
         ),
         hx_get="./search",
@@ -96,7 +97,7 @@ def VideoCard(video: Video):
 def get(query: str, session):
     results = video_search(query, max_results=12)
     session["last_query"] = query
-    return SearchPage(results)
+    return SearchPage(query,results)
 
 
 @threaded
