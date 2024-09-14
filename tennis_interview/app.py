@@ -31,7 +31,7 @@ app, rt = fast_app(hdrs=hdrs)
 summary_content = {"content": "", "generating": False, "cancelled": False}
 
 
-def SearchPage(query: Optional[str] = None, search_results: list[Video] = None):
+def SearchPage(session, search_results: list[Video] = None):
     search = Form(
         Div(
             Search(
@@ -40,16 +40,16 @@ def SearchPage(query: Optional[str] = None, search_results: list[Video] = None):
                     id="new-query",
                     name="query",
                     placeholder="Search for a tennis interview",
-                    value=query,
+                    value=session.get("last_query", ""),
                 ),
             ),
             cls="w-full",
         ),
         Div(
             Select(
-                Option("YouTube API", value="youtube", selected=True),
-                Option("DuckDuckGo", value="duckduckgo"),
-                Option("Serper", value="serper"),
+                Option("YouTube API", value="youtube", selected=session.get("last_api") == "youtube"),
+                Option("DuckDuckGo", value="duckduckgo", selected=session.get("last_api") == "duckduckgo"),
+                Option("Serper", value="serper", selected=session.get("last_api") == "serper"),
                 name="api",
                 id="search-api",
                 cls="text-sm py-1 text-gray-400"
@@ -87,8 +87,9 @@ def SearchPage(query: Optional[str] = None, search_results: list[Video] = None):
 
 
 @rt("/")
-def get():
-    return SearchPage()
+def get(session):
+    session["last_query"] = ""
+    return SearchPage(session)
 
 
 def VideoCard(video: Video):
@@ -116,7 +117,8 @@ def get(query: str, api: str, session):
     elif api == "serper":
         results = serper_api_search(query, max_results=max_results)
     session["last_query"] = query
-    return SearchPage(query,results)
+    session["last_api"] = api  
+    return SearchPage(session, results)
 
 
 @threaded
@@ -172,7 +174,8 @@ def get(session):
     summary_content["cancelled"] = True
     print("cancelled", summary_content["cancelled"])
     last_query = session.get("last_query", "")
-    return RedirectResponse(url=f"/search?query={last_query}")
+    last_api = session.get("last_api", "youtube")  
+    return RedirectResponse(url=f"/search?query={last_query}&api={last_api}")
 
 
 serve()
