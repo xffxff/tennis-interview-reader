@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from fasthtml.common import *
 from markdown import markdown
 
-from tennis_interview.search import serper_api_search as video_search
+from tennis_interview.search import youtube_api_search as video_search
 from tennis_interview.summary import summary as summary_video
 
 load_dotenv()
@@ -21,8 +21,7 @@ app, rt = fast_app(hdrs=hdrs)
 summary_content = {"content": "", "generating": False}
 
 
-@rt("/")
-def get():
+def SearchContainer(initial: bool = False):
     search = Form(
         Search(
             Input(type="search", id="new-query", name="query", placeholder="Search for a tennis interview"),
@@ -33,13 +32,27 @@ def get():
         cls="w-full max-w-md"
     )
 
+    div_cls = "flex flex-col items-center justify-center w-full"
+    if initial:
+        div_cls += " h-screen"
+    
+
+    return Div(
+        H1("Tennis Interview Search", cls="text-2xl mb-4"), 
+        search,
+        cls=div_cls,
+        id="search-container",
+        hx_swap_oob='true'
+    )
+
+
+@rt("/")
+def get():
     res_list = Div(id="res-list", cls="row")
     return Title("Tennis Interview Reading"), Main(
-        Div(
-            H1("Tennis Interview Search", cls="text-2xl mb-4"), 
-            search,
-            cls="flex flex-col items-center justify-center w-full",
-        ), res_list, cls="container"
+        SearchContainer(initial=True), 
+        res_list, 
+        cls="container",
     )
 
 
@@ -64,8 +77,7 @@ def get(query: str):
     res_list = []
     for video in results:
         res_list.append(VideoCard(video))
-    return res_list
-
+    return res_list, SearchContainer() 
 
 @threaded
 def get_summary_content(response):
