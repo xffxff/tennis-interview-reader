@@ -3,7 +3,7 @@ from fasthtml.common import *
 from markdown import markdown
 from starlette.responses import RedirectResponse
 
-from tennis_interview.search import duckduckgo_search as video_search
+from tennis_interview.search import youtube_api_search as video_search
 from tennis_interview.summary import summary as summary_video
 
 load_dotenv()
@@ -28,7 +28,7 @@ hdrs = (picolink, gridlink, tailwindcss, tailwind_config, css)
 
 app, rt = fast_app(hdrs=hdrs)
 
-summary_content = {"content": "", "generating": False}
+summary_content = {"content": "", "generating": False, "cancelled": False}
 
 
 def SearchPage(query: Optional[str] = None, search_results: list[Video] = None):
@@ -102,6 +102,8 @@ def get(query: str, session):
 @threaded
 def get_summary_content(response):
     for chunk in response:
+        if summary_content["cancelled"]:
+            break
         if chunk.choices[0].delta.content is not None:
             summary_content["content"] += chunk.choices[0].delta.content
     summary_content["generating"] = False
@@ -126,26 +128,29 @@ def get():
 
 
 @rt("/summary/{video_id}")
-def get(video_id: str, session):
+def get(video_id: str):
     summary_content["generating"] = True
     summary_content["content"] = ""
+    summary_content["cancelled"] = False
     response = summary_video(video_id)
     get_summary_content(response)
-    last_query = session.get("last_query", "")
     return Title("Video Summary"), Main(
         SummaryContent(),
         A(
             "Back to Search Results",
-            href=f"/search?query={last_query}",
+            href=f"/back-to-search",
             cls="mt-4 inline-block",
         ),
         cls="container",
     )
 
 
-# Add a new route to handle the redirect
 @rt("/back-to-search")
 def get(session):
+    summary_content["generating"] = False
+    summary_content["content"] = ""
+    summary_content["cancelled"] = True
+    print("cancelled", summary_content["cancelled"])
     last_query = session.get("last_query", "")
     return RedirectResponse(url=f"/search?query={last_query}")
 
