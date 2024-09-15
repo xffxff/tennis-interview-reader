@@ -29,32 +29,50 @@ hdrs = (picolink, gridlink, tailwindcss, tailwind_config, css)
 app, rt = fast_app(hdrs=hdrs)
 
 summary_content = {"content": "", "generating": False, "cancelled": False}
+hidden_api_select = True
 
+
+def api_select(hidden=False):
+    cls = "text-sm py-1 text-gray-400"
+    if hidden:
+        cls += " hidden"
+    return Select(
+        Option("YouTube API", value="youtube"),
+        Option("DuckDuckGo", value="duckduckgo"),
+        Option("Serper", value="serper"),
+        name="api",
+        id="search-api",
+        hx_swap_oob="true",
+        cls=cls,
+    )
 
 def SearchPage(session, search_results: list[Video] = None):
     search = Form(
         Div(
-            Search(
-                Input(
-                    type="search",
-                    id="new-query",
-                    name="query",
-                    placeholder="Search for a tennis interview",
-                    value=session.get("last_query", ""),
+            Div(
+                Search(
+                    Input(
+                        type="search",
+                        id="new-query",
+                        name="query",
+                        placeholder="Search for a tennis interview",
+                        value=session.get("last_query", ""),
+                        cls="w-full !mb-0",  
+                    ),
+                    cls="flex-grow",  
                 ),
+                Button(
+                    cls="ml-2 h-10 w-10 rounded-full cursor-pointer flex items-center justify-center bg-zinc-900 flex-shrink-0",  # Add flex-shrink-0 to prevent button from shrinking
+                    hx_get="./api-select",
+                ),
+                cls="flex items-center w-full",
             ),
-            cls="w-full",
+            cls="w-full max-w-3xl",  
         ),
         Div(
-            Select(
-                Option("YouTube API", value="youtube", selected=session.get("last_api") == "youtube"),
-                Option("DuckDuckGo", value="duckduckgo", selected=session.get("last_api") == "duckduckgo"),
-                Option("Serper", value="serper", selected=session.get("last_api") == "serper"),
-                name="api",
-                id="search-api",
-                cls="text-sm py-1 text-gray-400"
-            ),
-            cls="w-1/3 mt-0 mx-auto",
+            api_select(hidden=True),
+            id="api-select-container",
+            cls="w-1/3 mt-2 mx-auto",
         ),
         hx_get="./search",
         target_id="res-list",
@@ -176,6 +194,14 @@ def get(session):
     last_query = session.get("last_query", "")
     last_api = session.get("last_api", "youtube")  
     return RedirectResponse(url=f"/search?query={last_query}&api={last_api}")
+
+
+# 添加一个新的路由来处理 API 选择的显示/隐藏
+@rt("/api-select")
+def get():
+    global hidden_api_select
+    hidden_api_select = not hidden_api_select
+    return api_select(hidden=hidden_api_select)
 
 
 serve()
