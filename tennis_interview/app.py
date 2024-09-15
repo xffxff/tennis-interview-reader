@@ -3,7 +3,11 @@ from fasthtml.common import *
 from markdown import markdown
 from starlette.responses import RedirectResponse
 
-from tennis_interview.search import youtube_api_search, duckduckgo_search, serper_api_search
+from tennis_interview.search import (
+    duckduckgo_search,
+    serper_api_search,
+    youtube_api_search,
+)
 from tennis_interview.summary import summary as summary_video
 
 load_dotenv()
@@ -46,6 +50,7 @@ def api_select(hidden=False):
         cls=cls,
     )
 
+
 def SearchPage(session, search_results: list[Video] = None):
     search = Form(
         Div(
@@ -57,17 +62,20 @@ def SearchPage(session, search_results: list[Video] = None):
                         name="query",
                         placeholder="Search for a tennis interview",
                         value=session.get("last_query", ""),
-                        cls="w-full !mb-0",  
+                        cls="w-full !mb-0",
                     ),
-                    cls="flex-grow",  
+                    cls="flex-grow mr-2",
                 ),
                 Button(
-                    cls="ml-2 h-10 w-10 rounded-full cursor-pointer flex items-center justify-center bg-zinc-900 flex-shrink-0",  # Add flex-shrink-0 to prevent button from shrinking
+                    NotStr(
+                        """<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>"""
+                    ),
+                    cls="py-2 px-3 border-none rounded-full bg-black hover:bg-gray-700 transition-colors duration-200",
                     hx_get="./api-select",
                 ),
                 cls="flex items-center w-full",
             ),
-            cls="w-full max-w-3xl",  
+            cls="w-full max-w-3xl",
         ),
         Div(
             api_select(hidden=True),
@@ -135,7 +143,7 @@ def get(query: str, api: str, session):
     elif api == "serper":
         results = serper_api_search(query, max_results=max_results)
     session["last_query"] = query
-    session["last_api"] = api  
+    session["last_api"] = api
     return SearchPage(session, results)
 
 
@@ -192,7 +200,7 @@ def get(session):
     summary_content["cancelled"] = True
     print("cancelled", summary_content["cancelled"])
     last_query = session.get("last_query", "")
-    last_api = session.get("last_api", "youtube")  
+    last_api = session.get("last_api", "youtube")
     return RedirectResponse(url=f"/search?query={last_query}&api={last_api}")
 
 
