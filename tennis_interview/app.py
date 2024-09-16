@@ -86,10 +86,10 @@ def SearchPage(session, search_results: list[Video] = None):
         hx_get="./search",
         target_id="res-list",
         hx_swap="innerHTML",
-        cls="w-full max-w-md",
+        cls="w-full max-w-xl",
     )
 
-    div_cls = "flex flex-col items-center justify-start w-full"
+    div_cls = "flex flex-col items-center justify-start w-full mb-4"
 
     res_list = []
     if search_results:
@@ -103,7 +103,7 @@ def SearchPage(session, search_results: list[Video] = None):
 
     return Title("Tennis Interview Search"), Main(
         Div(
-            H1("Tennis Interview Search", cls="text-2xl mb-4"),
+            H1("Video Reader", cls="text-6xl mb-8 font-serif font-thin"),
             search,
             cls=div_cls,
             id="search-container",
@@ -138,7 +138,7 @@ def VideoCard(video: Video):
 
 @rt("/search")
 def get(query: str, api: str, session):
-    max_results = 12
+    max_results = 8
     if api == "youtube":
         results = youtube_api_search(query, max_results=max_results)
     elif api == "duckduckgo":
@@ -207,7 +207,7 @@ def get(session):
     return RedirectResponse(url=f"/search?query={last_query}&api={last_api}")
 
 
-# 添加一个新的路由来处理 API 选择的��示/隐藏
+# 添加一个新的路由来处理 API 选择的示/隐藏
 @rt("/api-select")
 def get():
     global hidden_api_select
