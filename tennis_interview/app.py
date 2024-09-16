@@ -62,7 +62,7 @@ def SearchPage(session, search_results: list[Video] = None):
                         name="query",
                         placeholder="Search for a tennis interview",
                         value=session.get("last_query", ""),
-                        cls="w-full !mb-0",
+                        cls="w-full",
                     ),
                     cls="flex-grow mr-2",
                 ),
@@ -72,30 +72,32 @@ def SearchPage(session, search_results: list[Video] = None):
                     ),
                     cls="py-2 px-3 border-none rounded-full bg-black hover:bg-gray-700 transition-colors duration-200",
                     hx_get="./api-select",
+                    type="button",
                 ),
                 cls="flex items-center w-full",
             ),
-            cls="w-full max-w-3xl",
-        ),
-        Div(
-            api_select(hidden=True),
-            id="api-select-container",
-            cls="w-1/3 mt-2 mx-auto",
+            Div(
+                api_select(hidden=True),
+                id="api-select-container",
+                cls="w-1/3 mt-2 mx-auto",
+            ),
+            cls="w-full max-w-3xl flex flex-col",
         ),
         hx_get="./search",
         target_id="res-list",
         hx_swap="innerHTML",
-        cls="w-full max-w-md flex flex-col",
+        cls="w-full max-w-md",
     )
 
-    div_cls = "flex flex-col items-center justify-center w-full"
+    div_cls = "flex flex-col items-center justify-start w-full"
 
     res_list = []
     if search_results:
         for video in search_results:
             res_list.append(VideoCard(video))
+        div_cls += " pt-16"
     else:
-        div_cls += " h-screen"
+        div_cls += " pt-64"
 
     res_list = Div(*res_list, id="res-list", cls="row")
 
@@ -105,10 +107,11 @@ def SearchPage(session, search_results: list[Video] = None):
             search,
             cls=div_cls,
             id="search-container",
-            hx_swap_oob="true",
         ),
         res_list,
         cls="container",
+        id="search-main",
+        hx_swap_oob="true",
     )
 
 
@@ -204,7 +207,7 @@ def get(session):
     return RedirectResponse(url=f"/search?query={last_query}&api={last_api}")
 
 
-# 添加一个新的路由来处理 API 选择的显示/隐藏
+# 添加一个新的路由来处理 API 选择的��示/隐藏
 @rt("/api-select")
 def get():
     global hidden_api_select
